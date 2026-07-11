@@ -31,8 +31,10 @@ function set(key, value) {
     localStorage.setItem(key, value)
     // also set cookie for server-read or legacy support
     try {
-        let cookie = `${key}=${encodeURIComponent(value)}; path=/; SameSite=Lax`;
-        if (typeof window !== "undefined" && window.location && window.location.protocol === "https:") cookie += "; Secure";
+        let cookie = key + "=" + encodeURIComponent(value) + "; path=/; SameSite=Lax";
+        if (typeof window !== "undefined" && window.location && window.location.protocol === "https:") {
+            cookie += "; Secure";
+        }
         document.cookie = cookie;
     } catch (e) {
         // ignore if document not available (e.g., SSR)
@@ -49,9 +51,9 @@ function remove(key) {
     try {
         const secure = (typeof window !== "undefined" && window.location && window.location.protocol === "https:") ? "; Secure" : "";
         // overwrite with empty value first
-        document.cookie = `${key}=; path=/; SameSite=Lax${secure}`;
+        document.cookie = key + "=; path=/; SameSite=Lax" + secure;
         // then expire using Max-Age=0 for reliable deletion
-        document.cookie = `${key}=; Max-Age=0; path=/; SameSite=Lax${secure}`;
+        document.cookie = key + "=; Max-Age=0; path=/; SameSite=Lax" + secure;
     } catch (e) {}
 }
 
