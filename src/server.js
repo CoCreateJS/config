@@ -1,11 +1,63 @@
-const readline = require('readline');
-const os = require('os');
-const path = require('path');
-const fs = require('fs');
-const util = require('node:util');
-const exec = util.promisify(require('node:child_process').exec);
+/********************************************************************************
+ * Copyright (C) 2023 CoCreate and Contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ ********************************************************************************/
 
-const { dotNotationToObject, getValueFromObject } = require('@cocreate/utils');
+// Commercial Licensing Information:
+// For commercial use of this software without the copyleft provisions of the AGPLv3,
+// you must obtain a commercial license from CoCreate LLC.
+// For details, visit <https://cocreate.app/licenses/> or contact us at sales@cocreate.app.
+
+import readline from 'node:readline';
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
+import { exec as childExec } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+
+import { dotNotationToObject, getValueFromObject } from '@cocreate/utils';
+
+const exec = promisify(childExec);
+const require = createRequire(import.meta.url);
+
+/**
+ * Helper function to dynamically load configurations.
+ * Handles both native ES modules and legacy CommonJS/JSON files safely.
+ * @param {string} filePath - Absolute path to the config file
+ * @returns {Promise<Object>} Evaluated configuration object
+ */
+async function loadConfig(filePath) {
+    if (!fs.existsSync(filePath)) return {};
+    try {
+        // Attempt native ESM dynamic import
+        const fileUrl = pathToFileURL(filePath).href;
+        const module = await import(fileUrl);
+        return module.default || module;
+    } catch (esmError) {
+        try {
+            // Fallback to Classic CommonJS / JSON Require compatibility
+            return require(filePath);
+        } catch (cjsError) {
+            console.error(`[@cocreate/config] Failed to load configuration at ${filePath}:`, esmError.message);
+            return {};
+        }
+    }
+}
 
 /**
  * Asynchronously retrieves configuration values. This function allows for 
@@ -15,35 +67,15 @@ const { dotNotationToObject, getValueFromObject } = require('@cocreate/utils');
  * from the user if they are not already defined in the configuration.
  *
  * @async
- * @param {Object} items - An object representing the configuration items to retrieve. 
- *                         The keys are the config paths, and the values are objects 
- *                         specifying the prompt and any variable substitutions.
+ * @param {Object|string} items - An object representing the configuration items to retrieve. 
+ * The keys are the config paths, and the values are objects 
+ * specifying the prompt and any variable substitutions.
  * @param {boolean} [env=true] - Flag to consider environment variables during config lookup.
  * @param {boolean} [global=true] - Flag to consider global configuration during config lookup.
  * @param {string} [configPath='CoCreate.config.js'] - Path to the project-specific configuration file.
  * @returns {Promise<Object>} A promise that resolves with the configuration object.
- *
- * @example
- * // Usage of the Config function
- * async function initConfig() {
- *   this.config = await Config({
- *       'organization_id': { prompt: 'Enter your organization_id: ' },
- *       'storage': {
- *           prompt: 'Enter a friendly name for the new storage: ',
- *           variable: 'name'
- *       },
- *       'storage.{{name}}.provider': {
- *           prompt: 'Enter the storage provider, ex mongodb: '
- *       },
- *       'storage.{{name}}.url': {
- *           prompt: 'Enter the storage providers url: '
- *       }
- *   });
- *
- *   const lazyLoadConfig = await Config('lazyload', false, false);
- * }
  */
-module.exports = async function (items, env = true, global = true, configPath = 'CoCreate.config.js') {
+export default async function config(items, env = true, global = true, configPath = 'CoCreate.config.js') {
     async function promptForInput(question) {
         const rl = readline.createInterface({
             input: process.stdin,
@@ -81,50 +113,51 @@ module.exports = async function (items, env = true, global = true, configPath = 
                 return value.$branch[stdout.trim()];
             } catch (error) {
                 console.error(`exec error: ${error}`);
-                // Handle the error or return a default value
-                return null; // or a default value as per your logic
+                return null;
             }
         } else {
             return value;
         }
     }
 
-
-    let config = {};
+    let configData = {};
     let update = false;
     let variables = {};
 
-    async function getConfig(items) {
-        if (typeof items === 'string')
-            items = { [items]: '' }
-        for (let key of Object.keys(items)) {
-            let { value, prompt, choices, variable } = items[key];
+    async function getConfig(targetItems) {
+        if (typeof targetItems === 'string') {
+            targetItems = { [targetItems]: '' };
+        }
+        for (let key of Object.keys(targetItems)) {
+            let { value, prompt, choices, variable } = targetItems[key];
 
             const placeholders = key.match(/{{\s*([\w\W]+?)\s*}}/g);
             if (placeholders && placeholders.length) {
                 for (let placeholder of placeholders) {
-                    placeholder.trim()
-                    if (variables[placeholder])
-                        key = key.replace(placeholder, variables[placeholder])
+                    placeholder.trim();
+                    if (variables[placeholder]) {
+                        key = key.replace(placeholder, variables[placeholder]);
+                    }
                 }
             }
 
             if (choices) {
                 if (!prompt && prompt !== '') continue;
 
-                let isAnswered = false
+                let isAnswered = false;
                 for (let choice of Object.keys(choices)) {
-                    let isAnsweredChoice = true
+                    let isAnsweredChoice = true;
                     for (let choicekey of Object.keys(choices[choice])) {
-                        let choiceValue = localConfig[choicekey] || globalConfig[choicekey]
+                        let choiceValue = localConfig[choicekey] || globalConfig[choicekey];
                         if (choiceValue) {
-                            config[choicekey] = choiceValue
-                        } else
-                            isAnsweredChoice = false
-
+                            configData[choicekey] = choiceValue;
+                        } else {
+                            isAnsweredChoice = false;
+                        }
                     }
-                    if (isAnsweredChoice)
-                        isAnswered = true
+                    if (isAnsweredChoice) {
+                        isAnswered = true;
+                    }
                 }
 
                 if (!isAnswered) {
@@ -135,71 +168,68 @@ module.exports = async function (items, env = true, global = true, configPath = 
                     }
                 }
             } else if (variable) {
-                let variableValue = localConfig[key] || globalConfig[key]
+                let variableValue = localConfig[key] || globalConfig[key];
                 if (!variableValue) {
                     variables[`{{${variable}}}`] = value || await promptForInput(prompt || `${variable}: `);
                 } else {
-                    variables[`{{${variable}}}`] = Object.keys(variableValue)[0]
+                    variables[`{{${variable}}}`] = Object.keys(variableValue)[0];
                 }
             } else {
                 if (value || value === "") {
-                    config[key] = value;
-                    if (global)
+                    configData[key] = value;
+                    if (global) {
                         update = true;
+                    }
                 } else if (process.env[key]) {
-                    // TODO: if JSON.String object.parse()
-                    config[key] = process.env[key];
+                    configData[key] = process.env[key];
                 } else {
-                    let localKey, globalKey
-                    if (localKey = getValueFromObject(localConfig, key)) {
-                        config[key] = await getValue(localKey);
-                    } else if (globalKey = getValueFromObject(globalConfig, key)) {
-                        config[key] = await getValue(globalKey);
+                    let localKey, globalKey;
+                    if ((localKey = getValueFromObject(localConfig, key))) {
+                        configData[key] = await getValue(localKey);
+                    } else if ((globalKey = getValueFromObject(globalConfig, key))) {
+                        configData[key] = await getValue(globalKey);
                     } else if (prompt || prompt === '') {
-                        config[key] = await promptForInput(prompt || `${key}: `);
+                        configData[key] = await promptForInput(prompt || `${key}: `);
                         if (global) update = true;
                     }
                     if (env) {
-                        if (typeof config[key] === 'object')
-                            process.env[key] = JSON.stringify(config[key]);
-                        else
-                            process.env[key] = config[key];
+                        if (typeof configData[key] === 'object') {
+                            process.env[key] = JSON.stringify(configData[key]);
+                        } else {
+                            process.env[key] = configData[key];
+                        }
                     }
                 }
             }
         }
     }
 
-    let localConfig = {};
+    // Resolving paths and dynamically loading configurations with ESM wrappers
     const localConfigPath = path.resolve(process.cwd(), configPath);
-    if (fs.existsSync(localConfigPath)) {
-        localConfig = require(localConfigPath);
-    }
+    const localConfig = await loadConfig(localConfigPath);
 
-    let globalConfig = {};
     const globalConfigPath = path.resolve(os.homedir(), 'CoCreate.config.js');
-    if (fs.existsSync(globalConfigPath)) {
-        globalConfig = require(globalConfigPath);
-    }
+    const globalConfig = await loadConfig(globalConfigPath);
 
     if (items) {
         await getConfig(items);
 
         if (update) {
             let updatedGlobalConfig = filterEmptyValues(
-                dotNotationToObject(config, globalConfig)
+                dotNotationToObject(configData, globalConfig)
             );
 
-            const globalConfigString = `module.exports = ${JSON.stringify(updatedGlobalConfig, null, 2)};`;
+            // Updated to write modern ES module syntax "export default" instead of "module.exports"
+            const globalConfigString = `export default ${JSON.stringify(updatedGlobalConfig, null, 2)};\n`;
             fs.writeFileSync(globalConfigPath, globalConfigString);
         }
     } else {
-        config = {
+        configData = {
             ...filterEmptyValues(globalConfig),
             ...filterEmptyValues(localConfig)
         };
     }
 
-    config = dotNotationToObject(config);
-    return config
+    configData = dotNotationToObject(configData);
+    return configData;
 }
