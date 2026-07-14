@@ -1,3 +1,17 @@
+## [1.13.5](https://github.com/CoCreate-app/CoCreate-config/compare/v1.13.4...v1.13.5) (2026-07-14)
+
+
+### Bug Fixes
+
+* bump package versions ([4e62321](https://github.com/CoCreate-app/CoCreate-config/commit/4e623217d7355e95639c406dc2737f72c0270fb3))
+* improve localStorage and cookie handling in get, set, and remove functions ([e6e4569](https://github.com/CoCreate-app/CoCreate-config/commit/e6e45699ee9e43ce8a7d452b9f287a83d76637c5))
+* remove deprecated index.js file ([5e07438](https://github.com/CoCreate-app/CoCreate-config/commit/5e074389edb3b6b69c22211e1efaf94cb1874e6b))
+* removed post install and add add packages to apprved list ([5ff4040](https://github.com/CoCreate-app/CoCreate-config/commit/5ff4040b39e2d346e21206304b603397dd40a029))
+* semantic version handling ([d349cef](https://github.com/CoCreate-app/CoCreate-config/commit/d349cef4f4644ee53ea96f9a50a3fabbc5e46c7a))
+* standardize cookie string concatenation in set and remove functions ([1a0dda3](https://github.com/CoCreate-app/CoCreate-config/commit/1a0dda32255fa3b523a49915262c4a897d29fdf0))
+* update module export to ES6 syntax in release.config.js ([26284e2](https://github.com/CoCreate-app/CoCreate-config/commit/26284e2bcef427c9b260bef7b5996b24a77bf573))
+* update package.json and refactor for module compatibility ([88b9a9c](https://github.com/CoCreate-app/CoCreate-config/commit/88b9a9c3047694d81d3b212ade49cd546d7aaebe))
+
 ## [1.13.4](https://github.com/CoCreate-app/CoCreate-config/compare/v1.13.3...v1.13.4) (2026-02-09)
 
 
