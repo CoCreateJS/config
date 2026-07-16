@@ -37,6 +37,22 @@
   "type":"module",
   "main": "./src/server.js",
   "browser": "./src/client.js",
+  "exports": {
+    ".": {
+      "node": "./src/server.js",
+      "deno": "./src/server.js",
+      "browser": "./src/client.js",
+      "default": "./src/server.js"
+    }
+  },
+  "exports": {
+    ".": {
+      "node": "./src/server.js",
+      "deno": "./src/server.js",
+      "browser": "./src/client.js",
+      "default": "./src/server.js"
+    }
+  },
   "dependencies": {
     "@cocreate/utils": "^1.42.2"
   },
