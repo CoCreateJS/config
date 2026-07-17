@@ -1,6 +1,6 @@
 {
   "name": "@cocreate/config",
-  "version": "1.13.4",
+  "version": "1.14.0",
   "description": "A convenient chain handler allows user to chain multiple CoCreate components together. When one action is complete next one will start. The sequence goes untill all config completed. Grounded on Vanilla javascript, easily configured using HTML5 attributes and/or JavaScript API.",
   "keywords": [
     "config",
@@ -34,17 +34,9 @@
     "type": "GitHub Sponsors ❤",
     "url": "https://github.com/sponsors/CoCreate-app"
   },
-  "type":"module",
+  "type": "module",
   "main": "./src/server.js",
   "browser": "./src/client.js",
-  "exports": {
-    ".": {
-      "node": "./src/server.js",
-      "deno": "./src/server.js",
-      "browser": "./src/client.js",
-      "default": "./src/server.js"
-    }
-  },
   "exports": {
     ".": {
       "node": "./src/server.js",

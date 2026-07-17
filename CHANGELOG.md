@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/CoCreate-app/CoCreate-config/compare/v1.13.5...v1.14.0) (2026-07-17)
+
+
+### Features
+
+* update automated workflow and release configuration for improved semantic release handling ([6b991f0](https://github.com/CoCreate-app/CoCreate-config/commit/6b991f0a58b23964e22b64d4b780d5da16b0a59e))
+
 ## [1.13.5](https://github.com/CoCreate-app/CoCreate-config/compare/v1.13.4...v1.13.5) (2026-07-14)
 
 
