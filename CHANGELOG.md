@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/CoCreate-app/CoCreate-config/compare/v1.14.1...v1.14.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* set default branch to main ([d5b6372](https://github.com/CoCreate-app/CoCreate-config/commit/d5b63720d80bccff5dcd532eddbc943ce23f657b))
+
 ## [1.14.1](https://github.com/CoCreate-app/CoCreate-config/compare/v1.14.0...v1.14.1) (2026-07-17)
 
 
