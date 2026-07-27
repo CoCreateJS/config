@@ -327,7 +327,7 @@ function mergeServerConfigs(docs = [], scope = {}) {
 }
 
 /**
- * Asynchronously queries the `server_configs` collection via CoCreate CRUD (`object.read`)
+ * Asynchronously queries the `servers_config` collection via CoCreate CRUD (`object.read`)
  * matching the target runtime scope (`cluster`, `server`, `worker`) and merges them into an operational object.
  * 
  * @param {Object} [options={}] - Query filters and runtime scope targets
@@ -364,7 +364,7 @@ export async function query(options = {}) {
 
     const crudRequest = {
         method: "object.read",
-        array: "server_configs",
+        array: "servers_config",
         organization_id,
         filter: queryFilter
     };
