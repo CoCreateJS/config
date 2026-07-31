@@ -38,10 +38,10 @@
   "main": "./src/server.js",
   "browser": "./src/browser.js",
   "dependencies": {
-    "@cocreate/utils": "^1.50.3"
+    "@cocreate/utils": "^1.52.0"
   },
   "devDependencies": {
-    "@cocreate/webpack": "^1.7.0"
+    "@cocreate/webpack": "^1.8.0"
   },
   "allowScripts": {
     "@cocreate/utils@1.42.2": true,
