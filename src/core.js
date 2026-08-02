@@ -9,6 +9,10 @@ import { dotNotationToObject, getValueFromObject } from '@cocreate/utils';
 // Global in-memory key-value state store for runtime configuration settings
 let configMemory = {};
 
+// Cache stores for loaded local and global configuration files
+let localConfigCache = {};
+let globalConfigCache = {};
+
 /**
  * Adapter holding environment-specific behaviors.
  * Injected statically by environment wrappers (Browser or Node/Deno Server adapters).
@@ -42,23 +46,43 @@ export function registerAdapter(envAdapter) {
 
 /**
  * Synchronously retrieves a configuration value by key.
- * Checks active in-memory overrides first, falling back to LocalStorage (browser) or process environment variables (server).
+ * Checks active in-memory overrides first, falling back to cached local/global config,
+ * LocalStorage (browser), or process environment variables (server).
  * 
  * @param {string} key - Configuration key name
  * @returns {*} Configuration value, or null if not resolved
  */
 export function get(key) {
-    if (adapter.isBrowser) {
-        if (configMemory[key] !== undefined) {
-            return configMemory[key];
-        }
-        const localVal = adapter.getLocalStorageItem(key);
-        if (localVal !== null && localVal !== undefined) return localVal;
-        return null;
-    } else {
-        if (configMemory[key] !== undefined) return configMemory[key];
-        return adapter.getEnv(key);
+    if (!key || typeof key !== 'string') return null;
+
+    // 1. Check in-memory runtime overrides using dot-notation lookup
+    const memoryVal = getValueFromObject(configMemory, key);
+    if (memoryVal !== undefined && memoryVal !== null) {
+        return memoryVal;
     }
+
+    // 2. Check cached local config file (e.g., CoCreate.config.js)
+    const localVal = getValueFromObject(localConfigCache, key);
+    if (localVal !== undefined && localVal !== null) {
+        return localVal;
+    }
+
+    // 3. Check cached global config file (~/.cocreate/config.json)
+    const globalVal = getValueFromObject(globalConfigCache, key);
+    if (globalVal !== undefined && globalVal !== null) {
+        return globalVal;
+    }
+
+    // 4. Fall back to environment adapters (Browser LocalStorage or Node env)
+    if (adapter.isBrowser) {
+        const storageVal = adapter.getLocalStorageItem(key);
+        if (storageVal !== null && storageVal !== undefined) return storageVal;
+    } else {
+        const envVal = adapter.getEnv(key);
+        if (envVal !== null && envVal !== undefined) return envVal;
+    }
+
+    return null;
 }
 
 /**
@@ -87,6 +111,8 @@ export function set(key, value) {
  */
 export function del(key) {
     delete configMemory[key];
+    delete localConfigCache[key];
+    delete globalConfigCache[key];
     
     if (adapter.isBrowser) {
         adapter.removeLocalStorageItem(key);
@@ -102,10 +128,11 @@ export const remove = del;
  * Checks if a specific key exists inside the active configuration scope.
  * 
  * @param {string} key - Configuration key name
- * @returns {boolean} True if key exists and is non-null
+ * @returns {boolean} True if key exists and is non-null/non-undefined
  */
 export function has(key) {
-    return get(key) !== null;
+    const val = get(key);
+    return val !== null && val !== undefined;
 }
 
 /**
@@ -115,6 +142,8 @@ export function has(key) {
  */
 export function clear() {
     configMemory = {};
+    localConfigCache = {};
+    globalConfigCache = {};
     if (adapter.isBrowser) {
         adapter.clearLocalStorage();
     }
@@ -122,7 +151,7 @@ export function clear() {
 }
 
 /**
- * Helper to resolve dynamic configuration values (such as Git branch branch-specific mappings).
+ * Helper to resolve dynamic configuration values (such as Git branch-specific mappings).
  * 
  * @param {*} val - Value or branch mapping object
  * @returns {Promise<*>} Resolved target value
@@ -152,15 +181,19 @@ export async function prompt(items, env = true, globalSetting = true, configPath
     let localConfig = await adapter.loadConfig(configPath);
     let globalConfig = await adapter.getGlobalConfig();
 
+    localConfigCache = localConfig || {};
+    globalConfigCache = globalConfig || {};
+
     const filterEmptyValues = (obj) => {
+        if (!obj || typeof obj !== 'object') return {};
         return Object.fromEntries(
             Object.entries(obj).filter(([_, val]) => {
-                if (typeof val === 'object' && !Array.isArray(val)) {
+                if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
                     return Object.keys(val).length > 0;
                 } else if (Array.isArray(val)) {
                     return val.length > 0;
                 } else {
-                    return val !== '';
+                    return val !== '' && val !== undefined;
                 }
             })
         );
@@ -193,7 +226,7 @@ export async function prompt(items, env = true, globalSetting = true, configPath
                 for (let choice of Object.keys(choices)) {
                     let isAnsweredChoice = true;
                     for (let choicekey of Object.keys(choices[choice])) {
-                        let choiceValue = configMemory[choicekey] || getValueFromObject(localConfig, choicekey) || getValueFromObject(globalConfig, choicekey);
+                        let choiceValue = configMemory[choicekey] || getValueFromObject(localConfigCache, choicekey) || getValueFromObject(globalConfigCache, choicekey);
                         if (choiceValue) {
                             configData[choicekey] = choiceValue;
                         } else {
@@ -213,7 +246,7 @@ export async function prompt(items, env = true, globalSetting = true, configPath
                     }
                 }
             } else if (variable) {
-                let variableValue = configMemory[key] || getValueFromObject(localConfig, key) || getValueFromObject(globalConfig, key);
+                let variableValue = configMemory[key] || getValueFromObject(localConfigCache, key) || getValueFromObject(globalConfigCache, key);
                 if (!variableValue) {
                     variables[`{{${variable}}}`] = value || await adapter.prompt(userPrompt || `${variable}: `);
                 } else {
@@ -229,9 +262,9 @@ export async function prompt(items, env = true, globalSetting = true, configPath
                     configData[key] = adapter.getEnv(key);
                 } else {
                     let localKey, globalKey;
-                    if ((localKey = getValueFromObject(localConfig, key))) {
+                    if ((localKey = getValueFromObject(localConfigCache, key))) {
                         configData[key] = await resolveValue(localKey);
-                    } else if ((globalKey = getValueFromObject(globalConfig, key))) {
+                    } else if ((globalKey = getValueFromObject(globalConfigCache, key))) {
                         configData[key] = await resolveValue(globalKey);
                     } else if (userPrompt || userPrompt === '') {
                         configData[key] = await adapter.prompt(userPrompt || `${key}: `);
@@ -251,14 +284,14 @@ export async function prompt(items, env = true, globalSetting = true, configPath
 
         if (updateGlobalFile && !adapter.isBrowser) {
             let updatedGlobalConfig = filterEmptyValues(
-                dotNotationToObject(configData, globalConfig)
+                dotNotationToObject(configData, globalConfigCache)
             );
             await adapter.setGlobalConfig(updatedGlobalConfig);
         }
     } else {
         configData = {
-            ...filterEmptyValues(globalConfig),
-            ...filterEmptyValues(localConfig)
+            ...filterEmptyValues(globalConfigCache),
+            ...filterEmptyValues(localConfigCache)
         };
         
         for (const [key, value] of Object.entries(configData)) {
@@ -274,10 +307,6 @@ export const request = prompt;
 
 /**
  * Helper to check if a document's target key matches a runtime target scope ID.
- * Rules:
- * - Omitted, undefined, null, "default", or "*" matches ANY target scope.
- * - Strings match exact ID.
- * - Arrays match if the target ID is contained within the list.
  * 
  * @param {string|Array<string>} [docTarget] - Target scope defined on the micro-config document
  * @param {string} [currentTargetId] - Active scope ID of the requesting server/worker/cluster
@@ -292,7 +321,6 @@ function isTargetMatch(docTarget, currentTargetId) {
 
 /**
  * Utility to merge multiple micro-configuration documents matching target scope rules.
- * Filters out documents with `enabled: false` and merges their `config` or `driver` properties.
  * 
  * @param {Array<Object>} docs - List of micro-configuration documents
  * @param {Object} [scope] - Runtime target scope ({ cluster, server, worker })
@@ -331,12 +359,6 @@ function mergeServerConfigs(docs = [], scope = {}) {
  * matching the target runtime scope (`cluster`, `server`, `worker`) and merges them into an operational object.
  * 
  * @param {Object} [options={}] - Query filters and runtime scope targets
- * @param {string} [options.cluster] - Active cluster ID
- * @param {string} [options.server] - Active server host ID
- * @param {string} [options.worker] - Active worker isolate ID
- * @param {string} [options.type] - Configuration category filter (e.g. "storage", "autoscaling")
- * @param {string} [options.organization_id] - Target platform organization ID
- * @param {boolean} [options.enabled=true] - Status filter
  * @returns {Promise<Object>} Consolidated runtime configuration state
  */
 export async function query(options = {}) {
@@ -346,7 +368,6 @@ export async function query(options = {}) {
     const queryFilter = { enabled };
     if (type) queryFilter.type = type;
 
-    // Build scope conditions allowing exact matches, arrays, or unspecified/default entries
     const scopeConditions = [];
     if (cluster) {
         scopeConditions.push({ cluster: { $in: [cluster, "default", "*"] } }, { cluster: { $exists: false } });
@@ -378,7 +399,7 @@ export async function query(options = {}) {
     return {};
 }
 
-// Bind configuration API methods directly to the request/prompt function to safely bypass Temporal Dead Zone (TDZ) limits.
+// Bind configuration API methods directly to request/prompt function
 request.prompt = prompt;
 request.get = get;
 request.set = set;
@@ -389,9 +410,6 @@ request.clear = clear;
 request.query = query;
 request.registerAdapter = registerAdapter;
 
-/**
- * Consolidated API Object Export.
- */
 export const configAPI = request;
 
 export { del as delete };
