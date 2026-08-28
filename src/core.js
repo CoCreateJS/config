@@ -321,6 +321,9 @@ function isTargetMatch(docTarget, currentTargetId) {
 
 /**
  * Utility to merge multiple micro-configuration documents matching target scope rules.
+ * Configuration paths and merge behavior are defined entirely by each document's
+ * config object. Dot-notation paths create nested objects, `path[]` appends to an
+ * array, and ordinary paths replace the existing value.
  * 
  * @param {Array<Object>} docs - List of micro-configuration documents
  * @param {Object} [scope] - Runtime target scope ({ cluster, server, worker })
@@ -336,18 +339,8 @@ function mergeServerConfigs(docs = [], scope = {}) {
         const matchesServer = isTargetMatch(doc.server, scope.server);
         const matchesWorker = isTargetMatch(doc.worker, scope.worker);
 
-        if (matchesCluster && matchesServer && matchesWorker) {
-            if (doc.driver) {
-                if (!consolidated.drivers) consolidated.drivers = {};
-                consolidated.drivers[doc.driver] = {
-                    _id: doc._id,
-                    name: doc.name,
-                    enabled: doc.enabled,
-                    ...doc.config
-                };
-            } else if (doc.config) {
-                Object.assign(consolidated, doc.config);
-            }
+        if (matchesCluster && matchesServer && matchesWorker && doc.config) {
+            dotNotationToObject(doc.config, consolidated);
         }
     }
 
