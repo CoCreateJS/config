@@ -20,18 +20,18 @@ let globalConfigCache = {};
 let adapter = {
     isBrowser: false,
     getLocalStorageItem: (key) => null,
-    setLocalStorageItem: (key, value) => {},
-    removeLocalStorageItem: (key) => {},
-    clearLocalStorage: () => {},
+    setLocalStorageItem: (key, value) => { },
+    removeLocalStorageItem: (key) => { },
+    clearLocalStorage: () => { },
     getGlobalConfig: () => ({}),
-    setGlobalConfig: (config) => {},
+    setGlobalConfig: (config) => { },
     getEnv: (key) => null,
-    setEnv: (key, value) => {},
-    removeEnv: (key) => {},
+    setEnv: (key, value) => { },
+    removeEnv: (key) => { },
     getGitBranch: async () => null,
     prompt: async (question) => "",
     loadConfig: async (filePath) => ({}),
-    saveConfig: async (filePath, content) => {}
+    saveConfig: async (filePath, content) => { }
 };
 
 /**
@@ -94,7 +94,7 @@ export function get(key) {
  */
 export function set(key, value) {
     configMemory[key] = value;
-    
+
     if (adapter.isBrowser) {
         adapter.setLocalStorageItem(key, value);
     } else {
@@ -113,7 +113,7 @@ export function del(key) {
     delete configMemory[key];
     delete localConfigCache[key];
     delete globalConfigCache[key];
-    
+
     if (adapter.isBrowser) {
         adapter.removeLocalStorageItem(key);
     } else {
@@ -293,7 +293,7 @@ export async function prompt(items, env = true, globalSetting = true, configPath
             ...filterEmptyValues(globalConfigCache),
             ...filterEmptyValues(localConfigCache)
         };
-        
+
         for (const [key, value] of Object.entries(configData)) {
             set(key, value);
         }
@@ -352,9 +352,10 @@ function mergeServerConfigs(docs = [], scope = {}) {
  * matching the target runtime scope (`cluster`, `server`, `worker`) and merges them into an operational object.
  * 
  * @param {Object} [options={}] - Query filters and runtime scope targets
+ * @param {Object} [crud] - Initialized CoCreate CRUD interface
  * @returns {Promise<Object>} Consolidated runtime configuration state
  */
-export async function query(options = {}) {
+export async function query(options = {}, crud) {
     const { cluster, server, worker, type, enabled = true } = options;
     const organization_id = options.organization_id || get('organization_id');
 
@@ -380,10 +381,12 @@ export async function query(options = {}) {
         method: "object.read",
         array: "servers_config",
         organization_id,
-        filter: queryFilter
+        $filter: {
+            query: queryFilter
+        }
     };
 
-    if (typeof crud !== 'undefined' && crud.send) {
+    if (crud?.send) {
         const response = await crud.send(crudRequest);
         const docs = response?.data || response?.object || [];
         return mergeServerConfigs(docs, { cluster, server, worker });
