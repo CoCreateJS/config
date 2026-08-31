@@ -381,7 +381,7 @@ export async function query(options = {}, crud) {
         method: "object.read",
         array: "servers_config",
         organization_id,
-        $filter: {
+        filter: {
             query: queryFilter
         }
     };
