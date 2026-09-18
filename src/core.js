@@ -202,6 +202,9 @@ export async function prompt(items, env = true, globalSetting = true, configPath
     let configData = {};
     let updateGlobalFile = false;
     let variables = {};
+    const getMemoryValue = (key) => Object.prototype.hasOwnProperty.call(configMemory, key)
+        ? configMemory[key]
+        : getValueFromObject(configMemory, key);
 
     async function processPromptItems(targetItems) {
         if (typeof targetItems === 'string') {
@@ -226,7 +229,7 @@ export async function prompt(items, env = true, globalSetting = true, configPath
                 for (let choice of Object.keys(choices)) {
                     let isAnsweredChoice = true;
                     for (let choicekey of Object.keys(choices[choice])) {
-                        let choiceValue = configMemory[choicekey] || getValueFromObject(localConfigCache, choicekey) || getValueFromObject(globalConfigCache, choicekey);
+                        let choiceValue = getMemoryValue(choicekey) || getValueFromObject(localConfigCache, choicekey) || getValueFromObject(globalConfigCache, choicekey);
                         if (choiceValue) {
                             configData[choicekey] = choiceValue;
                         } else {
@@ -246,19 +249,54 @@ export async function prompt(items, env = true, globalSetting = true, configPath
                     }
                 }
             } else if (variable) {
-                let variableValue = configMemory[key] || getValueFromObject(localConfigCache, key) || getValueFromObject(globalConfigCache, key);
-                if (!variableValue) {
-                    variables[`{{${variable}}}`] = value || await adapter.prompt(userPrompt || `${variable}: `);
-                } else {
+                let variableValue = getMemoryValue(key) ??
+                    getValueFromObject(localConfigCache, key) ??
+                    getValueFromObject(globalConfigCache, key);
+
+                if (
+                    (variableValue === undefined || variableValue === null || variableValue === '') &&
+                    env &&
+                    !adapter.isBrowser
+                ) {
+                    variableValue = adapter.getEnv(key);
+                }
+
+                if (typeof variableValue === 'string') {
+                    try {
+                        variableValue = JSON.parse(variableValue);
+                    } catch {
+                        // Variable-backed values are expected to be objects. A
+                        // plain string remains unresolved and falls through to
+                        // the configured prompt/default below.
+                    }
+                }
+
+                if (
+                    variableValue &&
+                    typeof variableValue === 'object' &&
+                    !Array.isArray(variableValue) &&
+                    Object.keys(variableValue).length
+                ) {
+                    configData[key] = variableValue;
+                    configMemory[key] = variableValue;
                     variables[`{{${variable}}}`] = Object.keys(variableValue)[0];
+                } else {
+                    variables[`{{${variable}}}`] = value || await adapter.prompt(userPrompt || `${variable}: `);
                 }
             } else {
+                const memoryValue = getMemoryValue(key);
                 if (value || value === "") {
                     configData[key] = value;
                     if (globalSetting) {
                         updateGlobalFile = true;
                     }
-                } else if (!adapter.isBrowser && adapter.getEnv(key)) {
+                } else if (
+                    memoryValue !== undefined &&
+                    memoryValue !== null &&
+                    memoryValue !== ''
+                ) {
+                    configData[key] = await resolveValue(memoryValue);
+                } else if (env && !adapter.isBrowser && adapter.getEnv(key)) {
                     configData[key] = adapter.getEnv(key);
                 } else {
                     let localKey, globalKey;
