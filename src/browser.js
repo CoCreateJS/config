@@ -18,6 +18,12 @@
 import { configAPI, registerAdapter } from './core.js';
 
 let localStorageImpl = null;
+// Config is read synchronously during socket initialization, before imports settle.
+try {
+    if (typeof window !== 'undefined') localStorageImpl = window.localStorage;
+} catch {
+    // The optional storage adapter can still provide its in-memory fallback.
+}
 
 // Bypassing top-level await by using standard promise syntax for ES2017 compatibility
 import('@cocreate/local-storage')
@@ -25,9 +31,7 @@ import('@cocreate/local-storage')
         localStorageImpl = mod.default || mod;
     })
     .catch(() => {
-        if (typeof window !== 'undefined') {
-            localStorageImpl = window.localStorage;
-        }
+        // Retain the synchronous browser storage implementation.
     });
 
 /**
