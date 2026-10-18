@@ -389,7 +389,7 @@ function mergeServerConfigs(docs = [], scope = {}) {
  * Asynchronously queries the `servers_config` collection via CoCreate CRUD (`object.read`)
  * matching the target runtime scope (`cluster`, `server`, `worker`) and merges them into an operational object.
  * 
- * @param {Object} [options={}] - Query filters and runtime scope targets
+ * @param {Object} [options={}] - Query filters and runtime scope targets; type may be a string or array
  * @param {Object} [crud] - Initialized CoCreate CRUD interface
  * @returns {Promise<Object>} Consolidated runtime configuration state
  */
@@ -398,7 +398,7 @@ export async function query(options = {}, crud) {
     const organization_id = options.organization_id || get('organization_id');
 
     const queryFilter = { enabled };
-    if (type) queryFilter.type = type;
+    if (type) queryFilter.type = Array.isArray(type) ? { $in: type } : type;
 
     const scopeConditions = [];
     if (cluster) {
@@ -420,7 +420,9 @@ export async function query(options = {}, crud) {
         array: "servers_config",
         organization_id,
         filter: {
-            query: queryFilter
+            query: queryFilter,
+            // Later config records overwrite earlier ones during the merge.
+            sort: [{ key: "_id", direction: "asc" }]
         }
     };
 
