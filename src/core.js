@@ -211,7 +211,7 @@ export async function prompt(items, env = true, globalSetting = true, configPath
             targetItems = { [targetItems]: '' };
         }
         for (let key of Object.keys(targetItems)) {
-            let { value, prompt: userPrompt, choices, variable } = targetItems[key] || {};
+            let { value, prompt: userPrompt, choices, variable, parse } = targetItems[key] || {};
 
             const placeholders = key.match(/{{\s*([\w\W]+?)\s*}}/g);
             if (placeholders && placeholders.length) {
@@ -311,6 +311,9 @@ export async function prompt(items, env = true, globalSetting = true, configPath
                 }
 
                 if (configData[key] !== undefined) {
+                    // Parse and validate before publishing the value to memory,
+                    // the environment, or the global configuration file.
+                    if (parse) configData[key] = parse(configData[key]);
                     set(key, configData[key]);
                 }
             }

@@ -135,7 +135,9 @@ registerAdapter({
     },
 
     setEnv: (key, value) => {
-        process.env[key] = value;
+        process.env[key] = value !== null && typeof value === 'object'
+            ? JSON.stringify(value)
+            : value;
     },
 
     removeEnv: (key) => {
