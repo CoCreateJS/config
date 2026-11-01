@@ -28,8 +28,10 @@ const exec = promisify(childExec);
 
 /**
  * Retrieves the current active git branch name on the system.
- * 
+ *
  * @returns {Promise<string|null>} The branch name, or null on error.
+ * @private
+ * @environment server
  */
 async function getGitBranch() {
     try {
@@ -42,9 +44,11 @@ async function getGitBranch() {
 
 /**
  * Prompts the CLI operator for input interactively using Node's standard readline module.
- * 
+ *
  * @param {string} question - Question to print on stdout.
  * @returns {Promise<string>} User input response.
+ * @private
+ * @environment server
  */
 async function cliPrompt(question) {
     const rl = readline.createInterface({
@@ -63,9 +67,11 @@ async function cliPrompt(question) {
 /**
  * Binary-safe server configuration file loader. Bypasses static compiler
  * tree issues by parsing configuration files dynamically under a sandboxed function wrapper.
- * 
+ *
  * @param {string} filePath - Absolute path to the config file on disk.
  * @returns {Promise<Object>} The parsed configuration object.
+ * @private
+ * @environment server
  */
 async function loadConfig(filePath) {
     try {
@@ -98,9 +104,11 @@ async function loadConfig(filePath) {
 
 /**
  * Writes or updates global settings on the user's host filesystem safely.
- * 
+ *
  * @param {string} filePath - Path to save the config.
  * @param {Object} content - The JSON payload to persist.
+ * @private
+ * @environment server
  */
 async function saveConfig(filePath, content) {
     try {
@@ -151,3 +159,18 @@ registerAdapter({
 });
 
 export default configAPI;
+
+/**
+ *
+ * @name default
+ * @kind member
+ * @public
+ * @environment server
+ */
+
+/**
+ * A convenient chain handler allows user to chain multiple CoCreate components together. When one action is complete next one will start. The sequence goes untill all config completed. Grounded on Vanilla javascript, easily configured using HTML5 attributes and/or JavaScript API.
+ *
+ * @module config
+ * @environment server
+ */

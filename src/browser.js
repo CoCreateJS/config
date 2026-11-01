@@ -35,11 +35,13 @@ import('@cocreate/local-storage')
     });
 
 /**
- * Renders an interactive fallback HTML modal overlay in the browser 
+ * Renders an interactive fallback HTML modal overlay in the browser
  * to handle real-time configurations or missing setup questions.
- * 
+ *
  * @param {string} question - The prompt question to display.
  * @returns {Promise<string>} The user's input response.
+ * @private
+ * @environment client
  */
 async function browserPrompt(question) {
     return new Promise((resolve) => {
@@ -124,3 +126,18 @@ registerAdapter({
 });
 
 export default configAPI;
+
+/**
+ *
+ * @name default
+ * @kind member
+ * @public
+ * @environment client
+ */
+
+/**
+ * A convenient chain handler allows user to chain multiple CoCreate components together. When one action is complete next one will start. The sequence goes untill all config completed. Grounded on Vanilla javascript, easily configured using HTML5 attributes and/or JavaScript API.
+ *
+ * @module config
+ * @environment client
+ */
