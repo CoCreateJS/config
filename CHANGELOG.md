@@ -1,3 +1,40 @@
+# [2.0.0](https://github.com/CoCreateJS/config/compare/v1.14.2...v2.0.0) (2026-11-02)
+
+
+### Bug Fixes
+
+* add Deno specific entries to .gitignore ([3694de8](https://github.com/CoCreateJS/config/commit/3694de82b76f1f5c883faa5fb477602cb74450c6))
+* bump [@cocreate](https://github.com/cocreate) dependencies ([2340dbd](https://github.com/CoCreateJS/config/commit/2340dbdf6e7dd98b5b841997ec34577badbfd056))
+* bump [@cocreate](https://github.com/cocreate) package versions ([2fd5f7c](https://github.com/CoCreateJS/config/commit/2fd5f7cf53c769b8aa9c9a1d630ae57600ad6bd5))
+* bump versions ([7c6f57c](https://github.com/CoCreateJS/config/commit/7c6f57c77aceca53a2b4e785cc80723823292d6f))
+* bump versions ([0f09995](https://github.com/CoCreateJS/config/commit/0f09995f65278dee122e22498e72bf3f64d886d3))
+* bumped dependencies ([1acc2bf](https://github.com/CoCreateJS/config/commit/1acc2bf7d1e15fa3eda69f1e90c3eee8933e6635))
+* correct collection name from `server_configs` to `servers_config` in query function ([e3c8c98](https://github.com/CoCreateJS/config/commit/e3c8c98396cd0b3ef9c4ac5be4509a7c6e416581))
+* enhance configuration retrieval and caching mechanisms ([5ae1332](https://github.com/CoCreateJS/config/commit/5ae133231050f8eace11bc31d3224e93fc6d3e4a))
+* formating ([2834cdf](https://github.com/CoCreateJS/config/commit/2834cdf6d9a86ec8c5e72b91f9c12f9ce8e80f83))
+* remove driver handling ([5b6bf2f](https://github.com/CoCreateJS/config/commit/5b6bf2fe10ba61c82b7e1a90c6963538961a91a8))
+* remove trailing slash from node_modules entry in .gitignore ([c8a3709](https://github.com/CoCreateJS/config/commit/c8a3709c8e3f7f594cf186e018644da3dd5dbfbb))
+* replace legacy $filter field with filter ([e438072](https://github.com/CoCreateJS/config/commit/e438072d2ae9401376c97316947d5aa23a36430a))
+* resolve configured prompt values ([46a7c41](https://github.com/CoCreateJS/config/commit/46a7c419c0d86d335027a9e9ab05402cfe8ccea9))
+* update git url ([596d444](https://github.com/CoCreateJS/config/commit/596d444ae7ecaec5f1b07a7374b915026f44965f))
+* update GitHub Actions to use latest versions and sync package.json description ([2cdd3c8](https://github.com/CoCreateJS/config/commit/2cdd3c8f459b2c6be97c4d3d9ebe1fd74fd51e11))
+* update main entry point and remove browser exports in package.json ([779e079](https://github.com/CoCreateJS/config/commit/779e0793f5b09dba80cc938c247176df5a529b6f))
+
+
+### Features
+
+* align CoCreate repository and package naming ([b3aa11f](https://github.com/CoCreateJS/config/commit/b3aa11fbf769535f1c96d5314ff6a745d066989e))
+* bump all dependencies ([d0b3214](https://github.com/CoCreateJS/config/commit/d0b3214b641a4e1b389cd602709fc58986065720))
+* bumped all dependency versions ([f2f89c4](https://github.com/CoCreateJS/config/commit/f2f89c4631ab1f1a43967b4336e5ca6d64d8ba55))
+* enhance documentation and added query function ([c502abc](https://github.com/CoCreateJS/config/commit/c502abce83a2449230640c924103364bbd453433))
+* implement isomorphic config management with dynamic loading and storage handling ([f9bd24f](https://github.com/CoCreateJS/config/commit/f9bd24f6aea68bc18eb3792fdd96eabb2a9503dd))
+* restructure configuration management with server and browser support ([7e4baf3](https://github.com/CoCreateJS/config/commit/7e4baf30cc3116212c35559fcf778ce84d0b0c3f))
+
+
+### BREAKING CHANGES
+
+* consumers must use the renamed CoCreate package and repository identities; the previous prefixed names are no longer supported.
+
 ## [1.14.2](https://github.com/CoCreateJS/CoCreate-config/compare/v1.14.1...v1.14.2) (2026-07-19)
 
 
