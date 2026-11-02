@@ -5,8 +5,8 @@ A convenient chain handler allows user to chain multiple CoCreate components tog
 ![minified](https://img.badgesize.io/https://cdn.CoCreateJS.com/config/latest/CoCreate-config.min.js?style=flat-square&label=minified&color=orange)
 ![gzip](https://img.badgesize.io/https://cdn.CoCreateJS.com/config/latest/CoCreate-config.min.js?compression=gzip&style=flat-square&label=gzip&color=yellow)
 ![brotli](https://img.badgesize.io/https://cdn.CoCreateJS.com/config/latest/CoCreate-config.min.js?compression=brotli&style=flat-square&label=brotli)
-![GitHub latest release](https://img.shields.io/github/v/release/CoCreate-app/CoCreate-config?style=flat-square)
-![License](https://img.shields.io/github/license/CoCreate-app/CoCreate-config?style=flat-square)
+![GitHub latest release](https://img.shields.io/github/v/release/CoCreateJS/config?style=flat-square)
+![License](https://img.shields.io/github/license/CoCreateJS/config?style=flat-square)
 ![Hiring](https://img.shields.io/static/v1?style=flat-square&label=&message=Hiring&color=blueviolet)
 
 ![CoCreate-config](https://cdn.CoCreateJS.com/docs/CoCreate-config.gif)
@@ -50,13 +50,13 @@ $ yarn install @cocreate/config
 
 # Announcements
 
-All updates to this library are documented in our [CHANGELOG](https://github.com/CoCreateJS/CoCreate-config/blob/master/CHANGELOG.md) and [releases](https://github.com/CoCreateJS/CoCreate-config/releases). You may also subscribe to email for releases and breaking changes.
+All updates to this library are documented in our [CHANGELOG](https://github.com/CoCreateJS/config/blob/master/CHANGELOG.md) and [releases](https://github.com/CoCreateJS/config/releases). You may also subscribe to email for releases and breaking changes.
 
 <a name="roadmap"></a>
 
 # Roadmap
 
-If you are interested in the future direction of this project, please take a look at our open [issues](https://github.com/CoCreateJS/CoCreate-config/issues) and [pull requests](https://github.com/CoCreateJS/CoCreate-config/pulls). We would love to hear your feedback.
+If you are interested in the future direction of this project, please take a look at our open [issues](https://github.com/CoCreateJS/config/issues) and [pull requests](https://github.com/CoCreateJS/config/pulls). We would love to hear your feedback.
 
 <a name="about"></a>
 
@@ -74,7 +74,7 @@ CoCreate-config is maintained and funded by CoCreate. The names and logos for Co
 
 This software is dual-licensed under the GNU Affero General Public License version 3 (AGPLv3) and a commercial license.
 
--   **Open Source Use**: For open-source projects and non-commercial use, this software is available under the AGPLv3. The AGPLv3 allows you to freely use, modify, and distribute this software, provided that all modifications and derivative works are also licensed under the AGPLv3. For the full license text, see the [LICENSE file](https://github.com/CoCreateJS/CoCreate-config/blob/master/LICENSE).
+-   **Open Source Use**: For open-source projects and non-commercial use, this software is available under the AGPLv3. The AGPLv3 allows you to freely use, modify, and distribute this software, provided that all modifications and derivative works are also licensed under the AGPLv3. For the full license text, see the [LICENSE file](https://github.com/CoCreateJS/config/blob/master/LICENSE).
 
 -   **Commercial Use**: For-profit companies and individuals intending to use this software for commercial purposes must obtain a commercial license. The commercial license is available when you sign up for an API key on our [website](https://CoCreateJS.com). This license permits proprietary use and modification of the software without the copyleft requirements of the AGPLv3. It is ideal for integrating this software into proprietary commercial products and applications.
 
