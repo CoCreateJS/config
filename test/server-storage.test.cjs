@@ -30,3 +30,18 @@ test('server adapter preserves flat storage in global config and inherited envir
     adapter.setEnv('organization_id', 'platform');
     assert.equal(environment.organization_id, 'platform');
 });
+
+test('server environment adapter resolves structured manager JSON while preserving primitive strings', () => {
+    let adapter;
+    const environment = { manager: JSON.stringify({ organization_id: 'platform', host: 'platform.test', apiKey: 'test-key' }),
+        primitive: 'true', number: '42', malformed: '{invalid' };
+    const source = fs.readFileSync(require.resolve('../src/server.js'), 'utf8')
+        .replace(/^import .*;$/gm, '').replace('export default configAPI;', '');
+    vm.runInNewContext(source, { fs, path, os, readline: {}, process: { env: environment }, console,
+        promisify: () => async () => ({}), childExec() {}, configAPI: {}, registerAdapter: value => { adapter = value; } });
+    assert.deepEqual(JSON.parse(JSON.stringify(adapter.getEnv('manager'))), JSON.parse(environment.manager));
+    assert.equal(adapter.getEnv('primitive'), 'true');
+    assert.equal(adapter.getEnv('number'), '42');
+    assert.equal(adapter.getEnv('malformed'), '{invalid');
+    assert.equal(adapter.getEnv('missing'), null);
+});

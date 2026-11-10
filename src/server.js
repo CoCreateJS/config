@@ -139,7 +139,14 @@ registerAdapter({
     },
 
     getEnv: (key) => {
-        return process.env[key] !== undefined ? process.env[key] : null;
+        const value = process.env[key];
+        if (value === undefined) return null;
+        try {
+            const parsed = JSON.parse(value);
+            return parsed !== null && typeof parsed === 'object' ? parsed : value;
+        } catch {
+            return value;
+        }
     },
 
     setEnv: (key, value) => {
