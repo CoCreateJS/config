@@ -370,7 +370,7 @@ function isTargetMatch(docTarget, currentTargetId) {
  * @param {Object} [scope] - Runtime target scope ({ cluster, server, worker })
  * @returns {Object} Consolidated operational configuration state
  */
-function mergeServerConfigs(docs = [], scope = {}) {
+function mergeConfigs(docs = [], scope = {}) {
     const consolidated = {};
 
     for (const doc of docs) {
@@ -389,7 +389,7 @@ function mergeServerConfigs(docs = [], scope = {}) {
 }
 
 /**
- * Asynchronously queries the `servers_config` collection via CoCreate CRUD (`object.read`)
+ * Asynchronously queries the `configs` collection via CoCreate CRUD (`object.read`)
  * matching the target runtime scope (`cluster`, `server`, `worker`) and merges them into an operational object.
  * 
  * @param {Object} [options={}] - Query filters and runtime scope targets; type may be a string or array
@@ -420,7 +420,7 @@ export async function query(options = {}, crud) {
 
     const crudRequest = {
         method: "object.read",
-        array: "servers_config",
+        array: "configs",
         organization_id,
         filter: {
             query: queryFilter,
@@ -432,7 +432,7 @@ export async function query(options = {}, crud) {
     if (crud?.send) {
         const response = await crud.send(crudRequest);
         const docs = response?.data || response?.object || [];
-        return mergeServerConfigs(docs, { cluster, server, worker });
+        return mergeConfigs(docs, { cluster, server, worker });
     }
 
     return {};
